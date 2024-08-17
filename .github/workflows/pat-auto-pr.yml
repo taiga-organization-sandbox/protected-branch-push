@@ -32,11 +32,11 @@ jobs:
 
       - name: Create Pull Request
         id: create-pr
-        uses: repo-sync/pull-request@v2
+        uses: peter-evans/create-pull-request@v6
         with:
           title: "Automated PR"
           body: "This is an automated pull request."
-          label: "automated-pr"
+          labels: "automated-pr"
           base: main
           branch: refs/heads/gh-actions
 
