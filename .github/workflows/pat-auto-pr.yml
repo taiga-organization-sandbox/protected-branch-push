@@ -1,60 +1,101 @@
-name: Automated PR Workflow
+name: ⭐️Update Version
 
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'The version to set in package.json'
+      new_version:
+        description: 'New version to set in package.json'
         required: true
+
 jobs:
-  create-and-merge-pr:
+  update_version:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout main branch
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      id: checkout_repo
+      uses: actions/checkout@v4
 
-      - name: Create gh-actions branch
-        run: |
-          git checkout -b gh-actions
-          git push --set-upstream origin gh-actions -f
+    - name: Check if version already exists
+      id: check_version
+      run: |
+        echo "Checking for version: v${{ github.event.inputs.new_version }}"
+        git fetch --tags
+        if git rev-parse "refs/tags/v${{ github.event.inputs.new_version }}" >/dev/null 2>&1; then
+          echo "Version v${{ github.event.inputs.new_version }} already exists."
+          exit 1
+        else
+          echo "Version v${{ github.event.inputs.new_version }} does not exist."
+        fi
 
-      - name: Update package.json version
-        run: |
-          jq '.version = "1"' package.json > temp.json && mv temp.json package.json
+    - name: Checkout gh-actions branch
+      id: checkout_gh_actions
+      if: steps.check_version.conclusion == 'success'
+      run: |
+        git checkout -b gh-actions
+        git push --set-upstream origin gh-actions -f
 
-      - name: Make changes
-        run: |
-          git config --global user.email "you@example.com"
-          git config --global user.name "Your Name"
-          git add package.json
-          git commit -m "Add changes"
-          git push
+    - name: Update version in package.json
+      id: update_package_json
+      if: steps.checkout_gh_actions.conclusion == 'success'
+      run: |
+        jq --arg new_version "${{ github.event.inputs.new_version }}" '.version = $new_version' package.json > tmp.json && mv tmp.json package.json
+        
+    - name: Commit and push changes
+      id: commit_push
+      if: steps.update_package_json.conclusion == 'success'
+      run: |
+        git config --global user.name github-actions
+        git config --global user.email github-actions@github.com
+        git add package.json
+        git commit -m "Update version of package.json"
+        git push
 
-      - name: Create Pull Request
-        id: create-pr
-        uses: peter-evans/create-pull-request@v6
-        with:
-          title: "Automated PR"
-          body: "This is an automated pull request."
-          labels: "automated-pr"
-          base: main
-          branch: refs/heads/gh-actions
+    - name: Create Pull Request
+      id: create_pr
+      if: steps.commit_push.conclusion == 'success'
+      uses: peter-evans/create-pull-request@v3
+      with:
+        base: main
+        branch: refs/heads/gh-actions
+        title: 'Update version of package.json'
+        body: 'This PR updates the version to v${{ github.event.inputs.new_version }} in package.json.'
+        labels: 'automated pr'
 
-      - name: Approve PR
-        run: |
-          PR_NUMBER=$(echo ${{ steps.create-pr.outputs.pr_number }})
-          curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          -H "Accept: application/vnd.github.v3+json" \
-          https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUMBER/reviews \
-          -d '{"event":"APPROVE"}'
-
-      - name: Auto-merge Pull Request
-        uses: pascalgn/automerge-action@v0.14.3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MERGE_LABELS: "automated-pr"
-          MERGE_METHOD: "squash"
-          MERGE_COMMIT_MESSAGE: "commit-message"
-          MERGE_RETRIES: "6"
-          MERGE_RETRY_SLEEP: "10000"
-          MERGE_DELETE_BRANCH: "true"
+    - name: Approve and Merge Pull Request
+      id: approve_merge_pr
+      if: steps.create_pr.outputs['pull-request-url'] != ''
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{ secrets.PAT }}
+        script: |
+          const prUrl = '${{ steps.create_pr.outputs.pull-request-url }}';
+          console.log(`Pull Request URL: ${prUrl}`);
+          const prNumber = prUrl.split('/').pop();
+    
+          // Approve the pull request
+          await github.pulls.createReview({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: prNumber,
+            event: 'APPROVE'
+          });
+    
+          // Merge the pull request
+          await github.pulls.merge({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: prNumber,
+            merge_method: 'squash'
+          });
+          
+    # Push a new tag from main branch for deployment
+    - name: Push a new tag for deployment
+      if: steps.approve_merge_pr.conclusion == 'success'
+      run: |
+        git config --global user.name 'github-actions'
+        git config --global user.email 'github-actions@github.com'
+        git checkout main
+        git pull origin main
+        git tag v${{ github.event.inputs.new_version }}
+        git push origin v${{ github.event.inputs.new_version }}
