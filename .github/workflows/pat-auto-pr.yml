@@ -67,7 +67,7 @@ jobs:
       if: steps.create_pr.outputs['pull-request-url'] != ''
       uses: actions/github-script@v4
       with:
-        github-token: ${{ secrets.PAT }}
+        github-token: ${{ secrets.GH_ACTIONS_PAT }}
         script: |
           const prUrl = '${{ steps.create_pr.outputs.pull-request-url }}';
           console.log(`Pull Request URL: ${prUrl}`);
