@@ -20,7 +20,7 @@ jobs:
 
       - name: Update package.json version
         run: |
-          jq '.version = "${{ github.event.inputs.version }}"' package.json > temp.json && mv temp.json
+          jq '.version = "1"' package.json > temp.json && mv temp.json package.json
 
       - name: Make changes
         run: |
