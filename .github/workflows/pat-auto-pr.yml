@@ -16,7 +16,7 @@ jobs:
       - name: Create gh-actions branch
         run: |
           git checkout -b gh-actions
-          git push --set-upstream origin gh-actions
+          git push --set-upstream origin gh-actions -f
 
       - name: Update package.json version
         run: |
