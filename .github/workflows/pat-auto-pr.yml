@@ -1,0 +1,53 @@
+name: Automated PR Workflow
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-and-merge-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+      
+      - name: Create gh-actions branch
+        run: |
+          git checkout -b gh-actions
+          git push --set-upstream origin gh-actions
+      
+      - name: Make changes
+        run: |
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+          git add .
+          git commit -m "Add changes"
+          git push
+
+      - name: Create Pull Request
+        id: create-pr
+        uses: repo-sync/pull-request@v2
+        with:
+          title: "Automated PR"
+          body: "This is an automated pull request."
+          label: "automated-pr"
+          base: main
+          branch: refs/heads/gh-actions
+
+      - name: Approve PR
+        run: |
+            PR_NUMBER=$(echo ${{ steps.create-pr.outputs.pr_number }})
+            curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUMBER/reviews \
+            -d '{"event":"APPROVE"}'
+
+      - name: Auto-merge Pull Request
+        uses: pascalgn/automerge-action@v0.14.3
+        env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+         MERGE_LABELS: "automated-pr"
+         MERGE_METHOD: "squash"
+         MERGE_COMMIT_MESSAGE: "commit-message"
+         MERGE_RETRIES: "6"
+         MERGE_RETRY_SLEEP: "10000"
+         MERGE_DELETE_BRANCH: "true"
