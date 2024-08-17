@@ -10,20 +10,27 @@ jobs:
       - name: Checkout main branch
         uses: actions/checkout@v4
       
-      - name: Create gh-actions branch
-        run: |
-          git checkout -b gh-actions
-          git push --set-upstream origin gh-actions
-      
-      - name: Make changes
-        run: |
-          git config --global user.email "you@example.com"
-          git config --global user.name "Your Name"
-          git add .
-          git commit -m "Add changes"
-          git push
+    　- name: Create gh-actions branch
+    　　run: |
+            git checkout -b gh-actions
+            git push --set-upstream origin gh-actions
 
-      - name: Create Pull Request
+    　- name: Update package.json version
+    　　run: |
+            jq '.version = "${{ github.event.inputs.version }}"' package.json > temp.json && mv temp.json package.json
+            git add package.json
+            git commit -m "Update version to ${{ github.event.inputs.version }}"
+            git push
+
+    　- name: Make changes
+    　　run: |
+            git config --global user.email "you@example.com"
+            git config --global user.name "Your Name"
+            git add .
+            git commit -m "Add changes"
+            git push
+
+    　- name: Create Pull Request
         id: create-pr
         uses: repo-sync/pull-request@v2
         with:

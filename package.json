@@ -6,5 +6,8 @@
     },
     "dependencies": {
         "jiti": "^1.21.6"
+    },
+    "devDependencies": {
+        "prettier": "3.3.3"
     }
 }
