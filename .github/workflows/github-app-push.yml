@@ -22,8 +22,6 @@ jobs:
     - name: Checkout repository
       id: checkout_repo
       uses: actions/checkout@v4
-      with: 
-        GITHUB_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
 
     - name: Check if version already exists
       id: check_version
@@ -53,6 +51,8 @@ jobs:
         git add package.json
         git commit -m "Update version of package.json"
         git push
+      env:
+        GITHUB_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
           
     # Push a new tag from main branch for deployment
     - name: Push a new tag for deployment
