@@ -1,2 +1,2 @@
-const user: string = "taiga"
+const user: string = "taiga test"
 console.log(user)
