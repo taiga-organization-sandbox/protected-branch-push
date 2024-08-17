@@ -1,0 +1,10 @@
+{
+    "name": "protected-branch-push",
+    "version": "1.0.0",
+    "scripts": {
+        "start": "pnpm jiti src/index.ts"
+    },
+    "dependencies": {
+        "jiti": "^1.21.6"
+    }
+}
