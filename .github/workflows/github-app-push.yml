@@ -1,4 +1,4 @@
-name: ⭐️Update Version with PAT
+name: ⭐️Update Version via GitHub App
 
 on:
   workflow_dispatch:
@@ -12,9 +12,18 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
+    - name: Get Token
+      id: get_workflow_token
+      uses: perter-murray/workflow-application-token-action@v3.0.0
+      with:
+        app_id: ${{ vars.GH_APP_ID }}
+        private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+      
     - name: Checkout repository
       id: checkout_repo
       uses: actions/checkout@v4
+      with: 
+        token: ${{ steps.get_workflow_token.outputs.token }}
 
     - name: Check if version already exists
       id: check_version
@@ -28,19 +37,12 @@ jobs:
           echo "Version v${{ github.event.inputs.new_version }} does not exist."
         fi
 
-    - name: Checkout gh-actions branch
-      id: checkout_gh_actions
-      if: steps.check_version.conclusion == 'success'
-      run: |
-        git checkout -b gh-actions
-        git push --set-upstream origin gh-actions -f
-
     - name: Update version in package.json
       id: update_package_json
       if: steps.checkout_gh_actions.conclusion == 'success'
       run: |
         jq --arg new_version "${{ github.event.inputs.new_version }}" '.version = $new_version' package.json > tmp.json && mv tmp.json package.json
-        
+
     - name: Commit and push changes
       id: commit_push
       if: steps.update_package_json.conclusion == 'success'
@@ -50,44 +52,6 @@ jobs:
         git add package.json
         git commit -m "Update version of package.json"
         git push
-
-    - name: Create Pull Request
-      id: create_pr
-      if: steps.commit_push.conclusion == 'success'
-      uses: peter-evans/create-pull-request@v3
-      with:
-        base: main
-        branch: refs/heads/gh-actions
-        title: 'Update version of package.json'
-        body: 'This PR updates the version to v${{ github.event.inputs.new_version }} in package.json.'
-        labels: 'automated pr'
-
-    - name: Approve and Merge Pull Request
-      id: approve_merge_pr
-      if: steps.create_pr.outputs['pull-request-url'] != ''
-      uses: actions/github-script@v4
-      with:
-        github-token: ${{ secrets.GH_ACTIONS_PAT }}
-        script: |
-          const prUrl = '${{ steps.create_pr.outputs.pull-request-url }}';
-          console.log(`Pull Request URL: ${prUrl}`);
-          const prNumber = prUrl.split('/').pop();
-    
-          // Approve the pull request
-          await github.pulls.createReview({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: prNumber,
-            event: 'APPROVE'
-          });
-    
-          // Merge the pull request
-          await github.pulls.merge({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: prNumber,
-            merge_method: 'squash'
-          });
           
     # Push a new tag from main branch for deployment
     - name: Push a new tag for deployment
