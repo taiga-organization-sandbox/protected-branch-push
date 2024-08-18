@@ -12,4 +12,4 @@ B) 🔺Personal Access Token (PAT): ***直接Pushはできないが、PRを保�
 
 * 作業メンバーが自身のアカウントで発行し、対象のリポジトリ
 no expiration (not recommended?)
-* scopes: all for repo/ workflow
+* scopes: all for repo/ workflowa
