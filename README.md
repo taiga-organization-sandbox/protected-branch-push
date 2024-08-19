@@ -1,4 +1,4 @@
-# Github Actionsでpackage.jsonのversion更新 & タグ付けプッシュを自動化
+# package.jsonのversion更新 & タグ付けプッシュを自動化
 
 
 ## 前提条件
@@ -44,6 +44,15 @@
     * Private Keys: ダウンロードしたpemファイルにアクセス=> 文字列をSecretsに設定
 * Github ActionsでCheckoutする際にトークンを発行し、Pushのステップで当該トークンを使用。(詳細は、`.github/workflows/github-app-push.yml`を参照。)
 
+## Github Actionsのパッケージ化 (再利用)
+
+### 今回のケース
+* 設定
+    * 再利用するActionワークフローを格納したリポジトリを作成 ([`taiga-org-gh-actions-packages`](https://github.com/taiga-organization-sandbox/taiga-org-gh-actions-packages))
+        * `.github/workflows/`にaction用のymlファイルを格納しても良いし、rootディレクトリに格納しても良い。
+        * 呼び出し先で入力するversionの入力値、宣言するsecretsを受け取れるよう設定する。
+    * 呼び出し元のymlファイル (`.github/workflows/github-app-push-reusable.yml`) で、Versionの入力値とGithub App用の`Private Keys`を渡すよう設定し、usesで再利用actionを使用。
+        * `@xxx`でバージョンを指定することも可能。
 
 ## 参考文献
 * [GitHub Apps overview(公式Doc)](https://docs.github.com/en/apps/overview)
