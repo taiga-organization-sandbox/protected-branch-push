@@ -13,6 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Call Update Version Workflow
-      uses: taiga-organization-sandbox/taiga-org-gh-actions-packages/github-app-push/github-app-push@v1.0.1
+      uses: taiga-org-gh-actions-packages/.github/workflows/github-app-push@v1.0.2
       with:
         new_version: ${{ github.event.inputs.new_version }}
