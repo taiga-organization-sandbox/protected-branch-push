@@ -51,7 +51,7 @@
     * 再利用するActionワークフローを格納したリポジトリを作成 ([`taiga-org-gh-actions-packages`](https://github.com/taiga-organization-sandbox/taiga-org-gh-actions-packages))
         * `.github/workflows/`にaction用のymlファイルを格納しても良いし、rootディレクトリに格納しても良い。
         * 呼び出し先で入力するversionの入力値、宣言するsecretsを受け取れるよう設定する。
-    * 呼び出し元のymlファイル (`.github/workflows/github-app-push-reusable.yml`) で、Versionの入力値とGithub App用の`Private Keys`を渡すよう設定し、usesで再利用actionを使用。
+    * 呼び出し元のymlファイル (`.github/workflows/github-app-push-reusable.yml`) で、Versionの入力値とGithub App用の`Private Keys`を渡すよう設定し、usesで再利用actionのpathを宣言。
         * `@xxx`でバージョンを指定することも可能。
 
 ## 参考文献
