@@ -10,6 +10,8 @@ on:
 
 jobs:
   update_version:
-    uses: taiga-organization-sandbox/taiga-org-gh-actions-packages/.github/workflows/github-app-push.yml@v1.0.2
+    uses: taiga-organization-sandbox/taiga-org-gh-actions-packages/.github/workflows/github-app-push.yml@main
     with:
       new_version: ${{ github.event.inputs.new_version }}
+    secrets:
+      GH_APP_PRIVATE_KEY: ${{ secrets.GH_APP_PRIVATE_KEY }}
