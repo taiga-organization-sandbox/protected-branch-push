@@ -12,7 +12,7 @@ jobs:
   update_version:
     # uses: taiga-organization-sandbox/taiga-org-gh-actions-packages/.github/workflows/github-app-push.yml@main
     # uses: taiga-organization-sandbox/taiga-org-gh-actions-packages/.github/workflows/github-app-push.yml@v1.0.4
-    uses: taiga-organization-sandbox/taiga-org-gh-actions-packages@main
+    uses: taiga-organization-sandbox/taiga-org-gh-actions-packages/action@main
     with:
       new_version: ${{ github.event.inputs.new_version }}
     secrets:
