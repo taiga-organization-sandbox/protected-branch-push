@@ -1,0 +1,15 @@
+name: Call Update Version Workflow from a reusable workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      new_version:
+        description: 'New version to set in package.json'
+        required: true
+        type: string
+
+jobs:
+  call_update_version:
+    uses: taiga-org-gh-actions-packages/workflows/github-app-push@v1.0.0
+    with:
+      new_version: ${{ github.event.inputs.new_version }}
