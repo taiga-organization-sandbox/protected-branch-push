@@ -10,6 +10,6 @@ on:
 
 jobs:
   call_update_version:
-    uses: taiga-organization-sandbox/taiga-org-gh-actions-packages/github-app-push@v1.0.0
+    uses: taiga-organization-sandbox/taiga-org-gh-actions-packages/github-app-push@v1.0.1
     with:
       new_version: ${{ github.event.inputs.new_version }}
